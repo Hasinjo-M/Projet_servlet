@@ -77,7 +77,20 @@ public class FrontServlet extends HttpServlet {
         }
     }
     
-   
+    public void init() throws ServletException {
+        ServletContext context = getServletContext();
+        String path = context.getRealPath("/");
+        try{
+            this.setMappingUrls( new Utilitaire().set_allMethodAnnotation(path,new File(path+"WEB-INF\\classes\\"),mappingUrls));
+        }catch(Exception e){
+            try {
+                throw e;
+            } catch (Exception ex) {
+                Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+    
     public HashMap<String, Mapping> getMappingUrls() {
         return mappingUrls;
     }
