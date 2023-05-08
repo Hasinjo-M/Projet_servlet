@@ -64,12 +64,56 @@ public class FrontServlet extends HttpServlet {
                 Class class_utiliser = (Class) class_method.get("class");
                 Object obj = class_utiliser.newInstance();
          
+
+                String attribut_name = null;
+                Class typefield = null;
+                
+                
+                Field[] attribut = obj.getClass().getDeclaredFields();
+                for (Field field : attribut) {
+                    if(request.getParameter(field.getName())!= null){
+                       attribut_name = utilitaire.capitalize(field.getName());  
+                        try {  
+                            obj.getClass().getMethod("set"+attribut_name, String.class).invoke(obj, request.getParameter(field.getName()));
+                        } catch (Exception e) {
+                            out.print(e.getMessage());
+                        }
+                    }
+                }
+                
+            // Le method
+                Method method = (Method)class_method.get("method");
+                Parameter[] parametre = method.getParameters();
+                ModelView view = null;
+            
+                if(parametre.length!=0){
+                    Object[] arguments = new Object[parametre.length];
+                    int count = 0;
+                    for (Parameter parameter : parametre) {
+                        if(parameter.isAnnotationPresent(annotation.Parameter.class)){
+                            String val = (parameter.getAnnotation(annotation.Parameter.class)).name();
+                            if(request.getParameter(val)!=null){
+                                Class paramType  = parameter.getType();
+                                arguments[count] = request.getParameter(val);
+                            }else{
+                                arguments[count] = null;
+                            }
+                            count++;    
+                        }
+                    }
+                    view = (ModelView) method.invoke(obj,arguments);
+                }
+                else {
+                    view = (ModelView) method.invoke(obj);
+                }
+
                 
             // Le method
                 Method method = (Method)class_method.get("method");
                 ModelView view = null;
                 view = (ModelView) method.invoke(obj);
                 
+
                 if(view != null){
                         try {
                         // Donner envoyer par model view
@@ -89,13 +133,16 @@ public class FrontServlet extends HttpServlet {
                             out.print(e.getMessage());
                         }
                     }
+
+                
                 }else{
-                    out.print(" L' URL n'est pas trouvé ");
+                    out.print(" L' URL n'est pas trouvé dans cette projet");
                 }
+            }
+
             
             
         }
-    }
     
     public void init() throws ServletException {
         ServletContext context = getServletContext();
