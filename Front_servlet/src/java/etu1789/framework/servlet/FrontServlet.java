@@ -119,13 +119,10 @@ public class FrontServlet extends HttpServlet {
                         }
                     }
                 
-                
-            }else{
-                out.print(" L' URL n'est pas trouvé ");
+                }else{
+                    out.print(" L' URL n'est pas trouvé dans cette projet");
+                }
             }
-            
-            
-        }
     }
     
     public void init() throws ServletException {
