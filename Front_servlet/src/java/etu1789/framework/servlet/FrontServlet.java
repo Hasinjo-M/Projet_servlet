@@ -40,7 +40,7 @@ public class FrontServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     
-  
+    private HashMap<String, Mapping> mappingUrls = new HashMap<>();
     
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, ClassNotFoundException {
@@ -63,11 +63,41 @@ public class FrontServlet extends HttpServlet {
                 out.println("<br>"+string);
             }
             
+            for (Map.Entry<String, Mapping> entry : mappingUrls.entrySet()) {
+                String key = entry.getKey();
+                Mapping value = entry.getValue();
+                out.print("<p>");
+                out.println("annotation = " + key + " / ");
+                out.println("class Name = " + value.getClassName() + " / ");
+                out.println("fonction Name = " + value.getMethod() + " / ");
+                out.println("</p>");
+            }
+            
             
         }
     }
     
-   
+    public void init() throws ServletException {
+        ServletContext context = getServletContext();
+        String path = context.getRealPath("/");
+        try{
+            this.setMappingUrls( new Utilitaire().set_allMethodAnnotation(path,new File(path+"WEB-INF\\classes\\"),mappingUrls));
+        }catch(Exception e){
+            try {
+                throw e;
+            } catch (Exception ex) {
+                Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+    
+    public HashMap<String, Mapping> getMappingUrls() {
+        return mappingUrls;
+    }
+
+    public void setMappingUrls(HashMap<String, Mapping> MappingUrls) {
+        this.mappingUrls = MappingUrls;
+    }
 
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

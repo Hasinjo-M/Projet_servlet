@@ -29,6 +29,24 @@ public class Utilitaire {
         return taburl;
     }
     
-    
+    public HashMap<String , Mapping> set_allMethodAnnotation( String path, File directori , HashMap<String, Mapping> mappingUrls) throws ClassNotFoundException{
+        for (File file_details : directori.listFiles()) {
+            if(file_details.isDirectory() == true){
+                mappingUrls = set_allMethodAnnotation(path, file_details, mappingUrls);
+            }else{
+                if(file_details.getName().contains(".class")){
+                    String name_class = file_details.toString().split("\\.")[0].replace(path+"WEB-INF\\classes\\" , "").replace("\\" , ".");
+                    Method[] List_functions = Class.forName(name_class).getDeclaredMethods() ;
+                    for (Method method : List_functions) {
+                        if(method.isAnnotationPresent(URLannotation.class)){
+                            URLannotation annotation = method.getAnnotation(URLannotation.class);
+                            mappingUrls.put(annotation.url(), new Mapping(name_class,method.getName()));
+                        }
+                    }
+                }
+            }
+        }
+        return mappingUrls;
+    }
     
 }
