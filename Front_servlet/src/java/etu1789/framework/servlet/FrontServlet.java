@@ -64,6 +64,7 @@ public class FrontServlet extends HttpServlet {
                 Class class_utiliser = (Class) class_method.get("class");
                 Object obj = class_utiliser.newInstance();
          
+
                 String attribut_name = null;
                 Class typefield = null;
                 
@@ -79,6 +80,7 @@ public class FrontServlet extends HttpServlet {
                         }
                     }
                 }
+
                 
             // Le method
                 Method method = (Method)class_method.get("method");
@@ -104,7 +106,7 @@ public class FrontServlet extends HttpServlet {
                 }
                 else {
                     view = (ModelView) method.invoke(obj);
-                }
+                }            
                 if(view != null){
                         try {
                         // Donner envoyer par model view
@@ -125,14 +127,10 @@ public class FrontServlet extends HttpServlet {
                         }
                     }
                 
-                
             }else{
                 out.print(" L' URL n'est pas trouvé ");
             }
-            
-            
         }
-    }
     
     public void init() throws ServletException {
         ServletContext context = getServletContext();
