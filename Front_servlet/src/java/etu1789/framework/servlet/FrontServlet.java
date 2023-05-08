@@ -6,6 +6,8 @@
 package etu1789.framework.servlet;
 
 import etu1789.framework.Mapping;
+import etu1789.framework.ModelView;
+import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -14,12 +16,16 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import utilitaire.Utilitaire;
 
 
@@ -58,6 +64,7 @@ public class FrontServlet extends HttpServlet {
                 Class class_utiliser = (Class) class_method.get("class");
                 Object obj = class_utiliser.newInstance();
          
+
                 String attribut_name = null;
                 Class typefield = null;
                 
@@ -99,6 +106,14 @@ public class FrontServlet extends HttpServlet {
                 else {
                     view = (ModelView) method.invoke(obj);
                 }
+
+                
+            // Le method
+                Method method = (Method)class_method.get("method");
+                ModelView view = null;
+                view = (ModelView) method.invoke(obj);
+                
+
                 if(view != null){
                         try {
                         // Donner envoyer par model view
@@ -118,12 +133,16 @@ public class FrontServlet extends HttpServlet {
                             out.print(e.getMessage());
                         }
                     }
+
                 
                 }else{
                     out.print(" L' URL n'est pas trouvé dans cette projet");
                 }
             }
-    }
+
+            
+            
+        }
     
     public void init() throws ServletException {
         ServletContext context = getServletContext();
@@ -164,6 +183,16 @@ public class FrontServlet extends HttpServlet {
             processRequest(request, response);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalArgumentException ex) {
+            Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvocationTargetException ex) {
+            Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchMethodException ex) {
+            Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -181,6 +210,16 @@ public class FrontServlet extends HttpServlet {
         try {
             processRequest(request, response);
         } catch (ClassNotFoundException ex) {
+            Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalArgumentException ex) {
+            Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvocationTargetException ex) {
+            Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchMethodException ex) {
             Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
