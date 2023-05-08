@@ -48,5 +48,40 @@ public class Utilitaire {
         }
         return mappingUrls;
     }
+
+
+    /***
+     * chelck Mapping
+     * 
+     */
+    public Mapping get_mapping(HashMap<String , Mapping> liste_mapping, HttpServletRequest request) {
+        String[] splits = splitURL(request);
+        List<HashMap<String , Mapping>> list_utiliser = new ArrayList<>();
+        String annotation = splits[1];
+        for (Map.Entry<String, Mapping> entry :  liste_mapping.entrySet()) {
+                String key = entry.getKey();
+                if(key.equals(annotation)){
+                    return entry.getValue();
+                }
+        }
+        return null;
+    }
+    
+    /*** appel du class et le method deu fonction ***/
+    
+    public  HashMap<String , Object> get_class_method(Mapping mapping) throws ClassNotFoundException{
+        HashMap<String , Object> rep = new HashMap<>();
+        Class class_utiliser = Class.forName(mapping.getClassName());
+        rep.put("class", class_utiliser);
+        Method[] liste_method = class_utiliser.getDeclaredMethods();
+        for (Method method : liste_method) {
+            if(method.getName().equals(mapping.getMethod())){
+                rep.put("method", method);
+                break;
+            }
+        }
+        return rep;
+    } 
+    
     
 }

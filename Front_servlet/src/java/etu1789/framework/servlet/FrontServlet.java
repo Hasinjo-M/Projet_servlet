@@ -6,6 +6,8 @@
 package etu1789.framework.servlet;
 
 import etu1789.framework.Mapping;
+import etu1789.framework.ModelView;
+import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -14,12 +16,16 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import utilitaire.Utilitaire;
 
 
@@ -43,35 +49,49 @@ public class FrontServlet extends HttpServlet {
     private HashMap<String, Mapping> mappingUrls = new HashMap<>();
     
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException, ClassNotFoundException {
+            throws ServletException, IOException, ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException, NoSuchMethodException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet FrontServlet</title>");            
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet FrontServlet at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
             
-            utilitaire.Utilitaire t = new Utilitaire();
-            String[] tab = t.splitURL(request);
-            for (String string : tab) {
-                out.println("<br>"+string);
-            }
+            utilitaire.Utilitaire utilitaire = new Utilitaire();
             
-            for (Map.Entry<String, Mapping> entry : mappingUrls.entrySet()) {
-                String key = entry.getKey();
-                Mapping value = entry.getValue();
-                out.print("<p>");
-                out.println("annotation = " + key + " / ");
-                out.println("class Name = " + value.getClassName() + " / ");
-                out.println("fonction Name = " + value.getMethod() + " / ");
-                out.println("</p>");
-            }
+        /** Recherche du mapping a partir Hasmap  **/
+            Mapping map = utilitaire.get_mapping(mappingUrls, request);
+            if( map != null ){
+            /*** La class et le methode utiliser ***/
+                HashMap<String , Object> class_method =  utilitaire.get_class_method( map );
+            // La class    
+                Class class_utiliser = (Class) class_method.get("class");
+                Object obj = class_utiliser.newInstance();
+         
+                
+            // Le method
+                Method method = (Method)class_method.get("method");
+                ModelView view = null;
+                view = (ModelView) method.invoke(obj);
+                
+                if(view != null){
+                        try {
+                        // Donner envoyer par model view
+                            HashMap<String , Object> data = view.getData();
+                            if( data != null){
+                                for (Map.Entry<String, Object> dt : data.entrySet()) {
+                                    String key = dt.getKey();
+                                    Object data_view = dt.getValue();
+                                    Class class_data = data_view.getClass();
+                                    request.setAttribute(key, class_data.cast(data_view));
+                                }
+                            }
+                            RequestDispatcher dispa = request.getRequestDispatcher(view.getPage());
+                            dispa.forward(request, response);
+                        } catch (Exception e) {
+                            
+                            out.print(e.getMessage());
+                        }
+                    }
+                }else{
+                    out.print(" L' URL n'est pas trouvé ");
+                }
             
             
         }
@@ -116,6 +136,16 @@ public class FrontServlet extends HttpServlet {
             processRequest(request, response);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalArgumentException ex) {
+            Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvocationTargetException ex) {
+            Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchMethodException ex) {
+            Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -133,6 +163,16 @@ public class FrontServlet extends HttpServlet {
         try {
             processRequest(request, response);
         } catch (ClassNotFoundException ex) {
+            Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalArgumentException ex) {
+            Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvocationTargetException ex) {
+            Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchMethodException ex) {
             Logger.getLogger(FrontServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
