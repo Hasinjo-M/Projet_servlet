@@ -80,6 +80,7 @@ public class FrontServlet extends HttpServlet {
                         }
                     }
                 }
+
                 
             // Le method
                 Method method = (Method)class_method.get("method");
@@ -105,15 +106,7 @@ public class FrontServlet extends HttpServlet {
                 }
                 else {
                     view = (ModelView) method.invoke(obj);
-                }
-
-                
-            // Le method
-                Method method = (Method)class_method.get("method");
-                ModelView view = null;
-                view = (ModelView) method.invoke(obj);
-                
-
+                }            
                 if(view != null){
                         try {
                         // Donner envoyer par model view
@@ -133,15 +126,10 @@ public class FrontServlet extends HttpServlet {
                             out.print(e.getMessage());
                         }
                     }
-
                 
-                }else{
-                    out.print(" L' URL n'est pas trouvé dans cette projet");
-                }
+            }else{
+                out.print(" L' URL n'est pas trouvé ");
             }
-
-            
-            
         }
     
     public void init() throws ServletException {
