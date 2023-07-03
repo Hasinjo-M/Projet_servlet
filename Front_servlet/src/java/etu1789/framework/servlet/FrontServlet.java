@@ -1,3 +1,4 @@
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -5,14 +6,17 @@
  */
 package etu1789.framework.servlet;
 
+import etu1789.framework.FileUpload;
 import etu1789.framework.Mapping;
 import etu1789.framework.ModelView;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Part;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -21,11 +25,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
 import utilitaire.Utilitaire;
 
 
@@ -33,6 +35,7 @@ import utilitaire.Utilitaire;
  *
  * @author Hasinjo
  */
+@MultipartConfig
 public class FrontServlet extends HttpServlet {
 
 
@@ -47,28 +50,21 @@ public class FrontServlet extends HttpServlet {
      */
     
     private HashMap<String, Mapping> mappingUrls = new HashMap<>();
+    private HashMap<String, Object> obj_singleton = new HashMap<>();
     
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException, NoSuchMethodException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            
             utilitaire.Utilitaire utilitaire = new Utilitaire();
-            
         /** Recherche du mapping a partir Hasmap  **/
             Mapping map = utilitaire.get_mapping(mappingUrls, request);
             if( map != null ){
             /*** La class et le methode utiliser ***/
-                HashMap<String , Object> class_method =  utilitaire.get_class_method( map );
+                HashMap<String , Object> class_method =  utilitaire.get_class_method( map, obj_singleton );
             // La class    
-                Class class_utiliser = (Class) class_method.get("class");
-                Object obj = class_utiliser.newInstance();
-         
-
-                String attribut_name = null;
-                Class typefield = null;
-                
-                
+                Object obj = class_method.get("object");
+                String attribut_name = null;   
                 Field[] attribut = obj.getClass().getDeclaredFields();
                 for (Field field : attribut) {
                     attribut_name = utilitaire.capitalize(field.getName());
@@ -89,7 +85,6 @@ public class FrontServlet extends HttpServlet {
                         }
                     }
                 }
-
                 
             // Le method
                 Method method = (Method)class_method.get("method");
@@ -111,11 +106,15 @@ public class FrontServlet extends HttpServlet {
                             count++;    
                         }
                     }
-                    view = (ModelView) method.invoke(obj,arguments);
+                    try {
+                         view = (ModelView) method.invoke(obj,arguments);
+                    } catch (Exception e) {
+                        out.print(e.getMessage());
+                    }
                 }
                 else {
                     view = (ModelView) method.invoke(obj);
-                }            
+                }
                 if(view != null){
                         try {
                         // Donner envoyer par model view
@@ -136,9 +135,12 @@ public class FrontServlet extends HttpServlet {
                         }
                     }
                 
+                
             }else{
                 out.print(" L' URL n'est pas trouvé ");
             }
+            
+            
         }
     }
     
@@ -146,7 +148,7 @@ public class FrontServlet extends HttpServlet {
         ServletContext context = getServletContext();
         String path = context.getRealPath("/");
         try{
-            this.setMappingUrls( new Utilitaire().set_allMethodAnnotation(path,new File(path+"WEB-INF\\classes\\"),mappingUrls));
+            this.setMappingUrls( new Utilitaire().set_allMethodAnnotation(path,new File(path+"WEB-INF\\classes\\"),mappingUrls, obj_singleton));
         }catch(Exception e){
             try {
                 throw e;
@@ -164,6 +166,14 @@ public class FrontServlet extends HttpServlet {
         this.mappingUrls = MappingUrls;
     }
 
+    public HashMap<String, Object> getObj_singleton() {
+        return obj_singleton;
+    }
+
+    public void setObj_singleton(HashMap<String, Object> obj_singleton) {
+        this.obj_singleton = obj_singleton;
+    }
+    
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
