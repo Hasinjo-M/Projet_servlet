@@ -71,9 +71,18 @@ public class FrontServlet extends HttpServlet {
                 
                 Field[] attribut = obj.getClass().getDeclaredFields();
                 for (Field field : attribut) {
+                    attribut_name = utilitaire.capitalize(field.getName());
+                       
+                    if(field.getType().getName().equals("etu1789.framework.FileUpload")){
+                        try {
+                            FileUpload file_upload = new FileUpload();
+                            Part filePart = request.getPart(field.getName());
+                            file_upload.transform_fileupload(filePart);
+                            obj.getClass().getMethod("set"+attribut_name, field.getType() ).invoke(obj, file_upload);
+                        }catch (Exception e) { out.print(e.getMessage()); } 
+                    }
                     if(request.getParameter(field.getName())!= null){
-                       attribut_name = utilitaire.capitalize(field.getName());  
-                        try {  
+                        try {
                             obj.getClass().getMethod("set"+attribut_name, String.class).invoke(obj, request.getParameter(field.getName()));
                         } catch (Exception e) {
                             out.print(e.getMessage());
@@ -131,6 +140,7 @@ public class FrontServlet extends HttpServlet {
                 out.print(" L' URL n'est pas trouvé ");
             }
         }
+    }
     
     public void init() throws ServletException {
         ServletContext context = getServletContext();
